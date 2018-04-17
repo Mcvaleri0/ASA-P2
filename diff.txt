@@ -1,0 +1,12 @@
+echo diff t01.out
+diff Testes/Outputs/t01.out Testes/Meus-Outputs/t01.out
+echo diff t02.out
+diff Testes/Outputs/t02.out Testes/Meus-Outputs/t02.out
+echo diff t03.out
+diff Testes/Outputs/t03.out Testes/Meus-Outputs/t03.out
+echo diff t04.out
+diff Testes/Outputs/t04.out Testes/Meus-Outputs/t04.out
+echo diff t05.out
+diff Testes/Outputs/t05.out Testes/Meus-Outputs/t05.out
+echo diff t06.out
+diff Testes/Outputs/t06.out Testes/Meus-Outputs/t06.out

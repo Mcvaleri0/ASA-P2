@@ -1,0 +1,12 @@
+echo running t01.in
+./proj < Testes/Inputs/t01.in > Testes/Meus-Outputs/t01.out
+echo running t02.in
+./proj < Testes/Inputs/t02.in > Testes/Meus-Outputs/t02.out
+echo running t03.in
+./proj < Testes/Inputs/t03.in > Testes/Meus-Outputs/t03.out
+echo running t04.in
+./proj < Testes/Inputs/t04.in > Testes/Meus-Outputs/t04.out
+echo running t05.in
+./proj < Testes/Inputs/t05.in > Testes/Meus-Outputs/t05.out
+echo running t06.in
+./proj < Testes/Inputs/t06.in > Testes/Meus-Outputs/t06.out
