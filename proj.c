@@ -1,4 +1,4 @@
-#include <stdio.h>
+ #include <stdio.h>
 #include <stdlib.h>
 
 
@@ -28,9 +28,6 @@ typedef struct no {
 int n_colunas, n_linhas;
 int **grafo_cap;
 int *peso_plano, *peso_cenario;
-
-int *altura, *excesso, *current;
-Lista *verts_Excesso;
 // ----------------------------------------------------------------------------
 
 
@@ -106,20 +103,34 @@ int main(int argc, char const *argv[]) {
     peso_cenario[i] = grafo_cap[i][C];
   }
 
-  // Le e guarda as capacidades das ligacoes horizontais --> Consideramos que cada vertice (pixel) so liga ao seu vizinho da direita.
-  for (i = 0; i < n_linhas*(n_colunas-1); i++) {
-    scanf("%d", &grafo_cap[i][DIR]);
+  // Le e guarda as capacidades das ligacoes horizontais.
+  for (i = 0; i < n_linhas*n_colunas; i++) {
+    j = right(i);
+    if (j == -1) {
+      grafo_cap[i][DIR] = 0;
+    } else {
+      scanf("%d", &grafo_cap[i][DIR]);
+      grafo_cap[j][ESQ] = grafo_cap[i][DIR];
+    }
   }
 
-  // Le e guarda as capacidades das ligacoes verticais --> Consideramos que cada vertice so liga ao seu vizinho de baixo.
-  for (i = 0; i < (n_linhas-1)*n_colunas; i++) {
-    scanf("%d", &grafo_cap[i][BAIXO]);
+  // Le e guarda as capacidades das ligacoes verticais.
+  for (i = 0; i < n_linhas*n_colunas; i++) {
+    j = down(i);
+    if (j == -1) {
+      grafo_cap[i][BAIXO] = 0;
+    } else {
+      scanf("%d", &grafo_cap[i][BAIXO]);
+      grafo_cap[j][CIMA] = grafo_cap[i][BAIXO];
+    }
   }
 
 
-  /* - - - - - - - Imprimir o input - - - - - - -
-  temp = 0;
+  // - - - - - - - Imprimir o input - - - - - - -
   printf("%d %d\n\n", n_linhas, n_colunas);
+
+  printf("Pesos de plano:\n");
+  temp = 0;
   for (i = 0; i < n_linhas*n_colunas; i++) {
     printf("%d ", grafo_cap[i][P]);
     temp++;
@@ -130,6 +141,7 @@ int main(int argc, char const *argv[]) {
   }
   printf("\n");
 
+  printf("Pesos de cenario\n");
   temp = 0;
   for (i = 0; i < n_linhas*n_colunas; i++) {
     printf("%d ", grafo_cap[i][C]);
@@ -141,19 +153,33 @@ int main(int argc, char const *argv[]) {
   }
   printf("\n");
 
+  printf("Ligacoes Para a direita (a ultima coluna e suposto ser 0):\n");
   temp = 0;
-  for (i = 0; i < n_linhas*(n_colunas-1); i++) {
+  for (i = 0; i < n_linhas*n_colunas; i++) {
     printf("%d ", grafo_cap[i][DIR]);
     temp++;
-    if (temp == (n_colunas-1)) {
+    if (temp == n_colunas) {
       printf("\n");
       temp = 0;
     }
   }
   printf("\n");
 
+  printf("Ligacoes Para a esquerda (a primeira coluna e suposto ser 0):\n");
   temp = 0;
-  for (i = 0; i < (n_linhas-1)*n_colunas; i++) {
+  for (i = 0; i < n_linhas*n_colunas; i++) {
+    printf("%d ", grafo_cap[i][ESQ]);
+    temp++;
+    if (temp == n_colunas) {
+      printf("\n");
+      temp = 0;
+    }
+  }
+  printf("\n");
+
+  printf("Ligacoes para baixo (a ultima linha e suposto ser 0):\n");
+  temp = 0;
+  for (i = 0; i < n_linhas*n_colunas; i++) {
     printf("%d ", grafo_cap[i][BAIXO]);
     temp++;
     if (temp == n_colunas) {
@@ -161,15 +187,19 @@ int main(int argc, char const *argv[]) {
       temp = 0;
     }
   }
-  printf("\n"); */
+  printf("\n");
 
-  for (i = 0; i < 6; i++) {
-    free(grafo_cap[i]);
+  printf("Ligacoes para cima (a primeira linha e suposto ser 0):\n");
+  temp = 0;
+  for (i = 0; i < n_linhas*n_colunas; i++) {
+    printf("%d ", grafo_cap[i][CIMA]);
+    temp++;
+    if (temp == n_colunas) {
+      printf("\n");
+      temp = 0;
+    }
   }
-  free(grafo_cap);
-
-  free(peso_plano);
-  free(peso_plano);
+  printf("\n");
 
   return 0;
 }
