@@ -37,7 +37,7 @@ int *peso_plano, *peso_cenario;
 int *res;
 
 int fluxoMin;
-int *cor, *dist, *pai;
+int *cor, *dist, *pais;
 No  *lista_incio, *lista_fim;
 // ----------------------------------------------------------------------------
 
@@ -45,6 +45,13 @@ No  *lista_incio, *lista_fim;
 
 
 // -------------------------- Biblioteca de Funcoes --------------------------
+
+// - - - - - - - - - - - - - - Funcoes auxiliares - - - - - - - - - - - - - -
+// min(a, b) --> retorna o menor numero entre a e b.
+int min(int a, int b) {
+  return (a < b ? a : b);
+}
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 
 // - - - - - - - Funcoes para controlo da matriz das capacidades - - - - - - -
@@ -67,8 +74,8 @@ int left(int i)  { return (((i % n_colunas) == 1) ? -1 : i-1); }
 // right(i) --> Funcao que da o vertice na posicao direita do vertice i.
 int right(int i) { return (((i % n_colunas) == 0) ? -1 : i+1); }
 
-// encontraIndViz(i) --> Funcao que decide a que vizinho corresponde i.
-int encontraIndViz(int i) {
+// encontraVizinho(i) --> Funcao que decide a que vizinho corresponde i.
+int encontraVizinho(int i) {
   switch (i) {
     case 0: return P;
     case 1: return up(i);
@@ -77,6 +84,15 @@ int encontraIndViz(int i) {
     case 4: return left(i);
   }
   return -1; // E suposto nunca acontecer.
+}
+
+// encontraLigacao(pai, filho) --> retorna o tipo de ligacao entre pai e filho.
+int encontraLigacao(int pai, int filho) {
+  if ((pai-n_colunas) == filho)      { return CIMA;  }
+  else if ((pai+n_colunas) == filho) { return BAIXO; }
+  else if ((pai-1) == filho)         { return ESQ;   }
+  else if ((pai+1) == filho)         { return DIR;   }
+  else { return -1; }
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -131,11 +147,11 @@ int BFS() {
   for (i = 1; i < n_vertices; i++) {
     cor[i]  = BRANCO;
     dist[i] = -1;
-    pai[i]  = -1;
+    pais[i] = -1;
   }
   cor[P]  = CINZA;
   dist[P] = 0;
-  pai[P]  = -2;
+  pais[P] = -2;
 
   lista_incio = NULL;
   lista_fim   = NULL;
@@ -153,13 +169,13 @@ int BFS() {
             return u; // Chegou-se ao target (C).
           }
 
-          v = encontraIndViz(i);
+          v = encontraVizinho(i);
         } else { v = i; }
 
         if (cor[v] == BRANCO) {
           cor[v]  = CINZA;
           dist[v] = dist[u] + 1;
-          pai[v]  = u;
+          pais[v]  = u;
           enqueque(v);
         }
       }
@@ -168,7 +184,23 @@ int BFS() {
     cor[u] = PRETO;
   }
 
-  return -1;  // ja nao e possivel chegar de P a C --> ja nao ha caminhos de aumento.
+  return -1;  /* ja nao e possivel chegar de P a C.
+                  ja nao ha caminhos de aumento. */
+}
+
+/* encontraFluxoMin(pai, filho) --> Funcao que encontra o fluxo que se pode
+                                   aumentar no caminho encontrado. */
+void encontraFluxoMin(int pai, int filho) {
+  if (pai == P) { fluxoMin = min(fluxoMin, grafo_cap[P][filho-1]); }
+
+  else if (filho == n_vertices) {
+    fluxoMin = grafo_cap[pai][C];
+    encontraFluxoMin(pais[pai], pai);
+  } else {
+    int lig = encontraLigacao(pai, filho);
+    fluxoMin = min(fluxoMin, grafo_cap[pai][lig]);
+    encontraFluxoMin(pais[pai], pai);
+  }
 }
 
 // edmonds_Karp() --> Calcula a divisao entre pontos de cenario e de primeiro plano a partir de fluxos.
@@ -177,15 +209,15 @@ void edmonds_Karp() {
 
   cor  = (int*) malloc(n_vertices * sizeof(int));
   dist = (int*) malloc(n_vertices * sizeof(int));
-  pai  = (int*) malloc(n_vertices * sizeof(int));
-
+  pais = (int*) malloc(n_vertices * sizeof(int));
 
   for (paiTarget = BFS(); paiTarget != -1; paiTarget = BFS()) {
-    printf("BFS: %d\n", paiTarget);
+    encontraFluxoMin(paiTarget, n_vertices);
+    //TODO --> acabar o edmonds_Karp
   }
   free(cor);
   free(dist);
-  free(pai);
+  free(pais);
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
