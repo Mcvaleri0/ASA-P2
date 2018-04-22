@@ -75,14 +75,14 @@ int left(int i)  { return (((i % n_colunas) == 1) ? -1 : i-1); }
 int right(int i) { return (((i % n_colunas) == 0) ? -1 : i+1); }
 
 // encontraVizinho(i) --> Funcao que decide a que vizinho corresponde i.
-int encontraVizinho(int i) {
+int encontraVizinho(int i, int u) {
   switch (i) {
     case 0: return P;
-    case 1: return up(i);
-    case 2: return right(i);
-    case 3: return down(i);
-    case 4: return left(i);
-    case 5: return C;
+    case 1: return up(u);
+    case 2: return right(u);
+    case 3: return down(u);
+    case 4: return left(u);
+    case 5: return n_vertices;
   }
   return -1; // E suposto nunca acontecer.
 }
@@ -113,7 +113,7 @@ int inverteLigacao(int ligacao) {
       return CIMA;
       break;
   }
-  return -1;
+  return P;
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -193,10 +193,11 @@ int BFS() {
             return u; // Chegou-se ao target (C).
           }
 
-          v = encontraVizinho(i);
+          v = encontraVizinho(i, u);
         } else { v = i+1; }
 
         if (cor[v] == BRANCO) {
+          printf("entrei\n");
           cor[v]  = CINZA;
           dist[v] = dist[u] + 1;
           pais[v]  = u;
@@ -251,7 +252,6 @@ void edmonds_Karp() {
       grafo_cap[pais[atual]][lig] = grafo_cap[pais[atual]][lig] - fluxoMin;
     }
   }
-  free(cor);
   free(dist);
   free(pais);
 }
@@ -328,6 +328,7 @@ int main(int argc, char const *argv[]) {
   temp = 0;
 
   for (i = 1; i < n_vertices; i++) {
+    
     if (cor[i] == BRANCO) printf("P ");
     else printf("C ");
 
@@ -418,6 +419,8 @@ int main(int argc, char const *argv[]) {
     free(grafo_cap[i]);
   }
   free(grafo_cap);
+
+  free(cor);
 
   free(peso_plano);
   free(peso_cenario);
