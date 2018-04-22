@@ -82,17 +82,38 @@ int encontraVizinho(int i) {
     case 2: return right(i);
     case 3: return down(i);
     case 4: return left(i);
+    case 5: return C;
   }
   return -1; // E suposto nunca acontecer.
 }
 
 // encontraLigacao(pai, filho) --> retorna o tipo de ligacao entre pai e filho.
 int encontraLigacao(int pai, int filho) {
-  if ((pai-n_colunas) == filho)      { return CIMA;  }
+  if (pai == P)                      { return filho; }
+  else if (filho == P)               { return P;     }
+  else if ((pai-n_colunas) == filho) { return CIMA;  }
   else if ((pai+n_colunas) == filho) { return BAIXO; }
   else if ((pai-1) == filho)         { return ESQ;   }
   else if ((pai+1) == filho)         { return DIR;   }
   else { return -1; }
+}
+
+int inverteLigacao(int ligacao) {
+  switch(ligacao) {
+    case ESQ:
+      return DIR;
+      break;
+    case DIR:
+      return ESQ;
+      break;
+    case CIMA:
+      return BAIXO;
+      break;
+    case BAIXO:
+      return CIMA;
+      break;
+  }
+  return -1;
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -144,6 +165,7 @@ void freeLista() {
 int BFS() {
   int i, u, v, n_vizinhos;
 
+
   for (i = 1; i < n_vertices; i++) {
     cor[i]  = BRANCO;
     dist[i] = -1;
@@ -151,7 +173,7 @@ int BFS() {
   }
   cor[P]  = CINZA;
   dist[P] = 0;
-  pais[P] = -2;
+  pais[P] = -1;
 
   lista_incio = NULL;
   lista_fim   = NULL;
@@ -162,15 +184,17 @@ int BFS() {
     n_vizinhos = (u == P ? n_vertices-1 : 6);
 
     for (i = 0; i < n_vizinhos; i++) {
+
       if (grafo_cap[u][i] != 0) { // As ligacoes com capacidade 0 nao contam.
         if (u != P) {
           if (i == C) {
+
             freeLista();
             return u; // Chegou-se ao target (C).
           }
 
           v = encontraVizinho(i);
-        } else { v = i; }
+        } else { v = i+1; }
 
         if (cor[v] == BRANCO) {
           cor[v]  = CINZA;
@@ -191,7 +215,9 @@ int BFS() {
 /* encontraFluxoMin(pai, filho) --> Funcao que encontra o fluxo que se pode
                                    aumentar no caminho encontrado. */
 void encontraFluxoMin(int pai, int filho) {
-  if (pai == P) { fluxoMin = min(fluxoMin, grafo_cap[P][filho-1]); }
+
+  if (pai == P) { 
+    fluxoMin = min(fluxoMin, grafo_cap[P][filho-1]); }
 
   else if (filho == n_vertices) {
     fluxoMin = grafo_cap[pai][C];
@@ -205,7 +231,7 @@ void encontraFluxoMin(int pai, int filho) {
 
 // edmonds_Karp() --> Calcula a divisao entre pontos de cenario e de primeiro plano a partir de fluxos.
 void edmonds_Karp() {
-  int paiTarget;
+  int paiTarget, atual, lig;
 
   cor  = (int*) malloc(n_vertices * sizeof(int));
   dist = (int*) malloc(n_vertices * sizeof(int));
@@ -213,7 +239,17 @@ void edmonds_Karp() {
 
   for (paiTarget = BFS(); paiTarget != -1; paiTarget = BFS()) {
     encontraFluxoMin(paiTarget, n_vertices);
-    //TODO --> acabar o edmonds_Karp
+
+    grafo_cap[paiTarget][C] = grafo_cap[paiTarget][C] - fluxoMin;
+    for(atual = paiTarget; atual != P; atual = pais[atual]) {
+      lig = encontraLigacao(atual, pais[atual]);
+      
+      grafo_cap[atual][lig] = grafo_cap[atual][lig] + fluxoMin;
+
+      lig = inverteLigacao(lig);
+
+      grafo_cap[pais[atual]][lig] = grafo_cap[pais[atual]][lig] - fluxoMin;
+    }
   }
   free(cor);
   free(dist);
@@ -286,13 +322,24 @@ int main(int argc, char const *argv[]) {
     }
   }
 
-
   //Calcula a divisao entre pontos de cenario e de primeiro plano a partir de fluxos.
   edmonds_Karp();
 
+  temp = 0;
+
+  for (i = 1; i < n_vertices; i++) {
+    if (cor[i] == BRANCO) printf("P ");
+    else printf("C ");
+
+    temp++;
+    if (temp == n_colunas) {
+      printf("\n");
+      temp = 0;
+    }
+  }
 
   // - - - - - - - Imprimir o input - - - - - - -
-  printf("%d %d\nn_vertices: %d\n\n", n_linhas, n_colunas, n_vertices);
+  /*printf("%d %d\nn_vertices: %d\n\n", n_linhas, n_colunas, n_vertices);
 
   printf("Pesos de plano:\n");
   temp = 0;
@@ -364,7 +411,7 @@ int main(int argc, char const *argv[]) {
       temp = 0;
     }
   }
-  printf("\n");
+  printf("\n");*/
 
 
   for (i = 0; i < n_vertices; i++) {
