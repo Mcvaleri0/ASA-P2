@@ -34,8 +34,6 @@ int n_vertices; // --> ja conta com o vertice P (source)
 int **grafo_cap;
 int *peso_plano, *peso_cenario;
 
-int *res;
-
 int fluxoMin;
 int *cor, *dist, *pais;
 No  *lista_incio, *lista_fim;
@@ -89,7 +87,7 @@ int encontraVizinho(int i, int u) {
 
 // encontraLigacao(pai, filho) --> retorna o tipo de ligacao entre pai e filho.
 int encontraLigacao(int pai, int filho) {
-  if (pai == P)                      { return filho; }
+  if (pai == P)                      { return filho-1; }
   else if (filho == P)               { return P;     }
   else if ((pai-n_colunas) == filho) { return CIMA;  }
   else if ((pai+n_colunas) == filho) { return BAIXO; }
@@ -98,23 +96,6 @@ int encontraLigacao(int pai, int filho) {
   else { return -1; }
 }
 
-int inverteLigacao(int ligacao) {
-  switch(ligacao) {
-    case ESQ:
-      return DIR;
-      break;
-    case DIR:
-      return ESQ;
-      break;
-    case CIMA:
-      return BAIXO;
-      break;
-    case BAIXO:
-      return CIMA;
-      break;
-  }
-  return P;
-}
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 
@@ -165,12 +146,12 @@ void freeLista() {
 int BFS() {
   int i, u, v, n_vizinhos;
 
-
   for (i = 1; i < n_vertices; i++) {
     cor[i]  = BRANCO;
     dist[i] = -1;
     pais[i] = -1;
   }
+
   cor[P]  = CINZA;
   dist[P] = 0;
   pais[P] = -1;
@@ -185,7 +166,7 @@ int BFS() {
 
     for (i = 0; i < n_vizinhos; i++) {
 
-      if (grafo_cap[u][i] != 0) { // As ligacoes com capacidade 0 nao contam.
+      if (grafo_cap[u][i] > 0) { // As ligacoes com capacidade 0 nao contam.
         if (u != P) {
           if (i == C) {
 
@@ -194,13 +175,13 @@ int BFS() {
           }
 
           v = encontraVizinho(i, u);
+
         } else { v = i+1; }
 
         if (cor[v] == BRANCO) {
-          printf("entrei\n");
           cor[v]  = CINZA;
           dist[v] = dist[u] + 1;
-          pais[v]  = u;
+          pais[v] = u;
           enqueque(v);
         }
       }
@@ -239,20 +220,23 @@ void edmonds_Karp() {
   pais = (int*) malloc(n_vertices * sizeof(int));
 
   for (paiTarget = BFS(); paiTarget != -1; paiTarget = BFS()) {
+
     encontraFluxoMin(paiTarget, n_vertices);
 
-    grafo_cap[paiTarget][C] = grafo_cap[paiTarget][C] - fluxoMin;
+    grafo_cap[paiTarget][C] -= fluxoMin;
+
     for(atual = paiTarget; atual != P; atual = pais[atual]) {
+
       lig = encontraLigacao(atual, pais[atual]);
       
       grafo_cap[atual][lig] = grafo_cap[atual][lig] + fluxoMin;
 
-      lig = inverteLigacao(lig);
+      lig = encontraLigacao(pais[atual], atual);
 
       grafo_cap[pais[atual]][lig] = grafo_cap[pais[atual]][lig] - fluxoMin;
     }
   }
-  free(dist);
+  free(cor);
   free(pais);
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -329,7 +313,36 @@ int main(int argc, char const *argv[]) {
 
   for (i = 1; i < n_vertices; i++) {
     
-    if (cor[i] == BRANCO) printf("P ");
+    if (dist[i] == -1) {
+      temp += peso_plano[i-1];
+    }
+    else {
+      temp += peso_cenario[i-1];
+    }
+  }
+
+  /*for (i = 1; i < n_vertices; i++) {
+    
+    if (dist[i] == -1) {
+      for (j = 1; i < 5; j++) {
+        if (grafo_cap[i][j] == 0) {
+          if((ind1 = encontraVizinho(j, i)) != -1) {
+            if((ind2 = encontraLigacao(ind1,i)) != -1) {
+              temp += grafo_cap[ind1][ind2];
+            }
+          }
+        }
+      }
+    }
+  }*/
+
+  printf("%d\n\n", temp);
+
+  temp = 0;
+
+  for (i = 1; i < n_vertices; i++) {
+    
+    if (dist[i] == -1) printf("P ");
     else printf("C ");
 
     temp++;
@@ -338,82 +351,6 @@ int main(int argc, char const *argv[]) {
       temp = 0;
     }
   }
-
-  // - - - - - - - Imprimir o input - - - - - - -
-  /*printf("%d %d\nn_vertices: %d\n\n", n_linhas, n_colunas, n_vertices);
-
-  printf("Pesos de plano:\n");
-  temp = 0;
-  for (i = 0; i < (n_vertices-1); i++) {
-    printf("%d ", grafo_cap[P][i]);
-    temp++;
-    if (temp == n_colunas) {
-      printf("\n");
-      temp = 0;
-    }
-  }
-  printf("\n");
-
-  printf("Pesos de cenario\n");
-  temp = 0;
-  for (i = 1; i < n_vertices; i++) {
-    printf("%d ", grafo_cap[i][C]);
-    temp++;
-    if (temp == n_colunas) {
-      printf("\n");
-      temp = 0;
-    }
-  }
-  printf("\n");
-
-  printf("Ligacoes Para a direita (a ultima coluna e suposto ser 0):\n");
-  temp = 0;
-  for (i = 1; i < n_vertices; i++) {
-    printf("%d ", grafo_cap[i][DIR]);
-    temp++;
-    if (temp == n_colunas) {
-      printf("\n");
-      temp = 0;
-    }
-  }
-  printf("\n");
-
-  printf("Ligacoes Para a esquerda (a primeira coluna e suposto ser 0):\n");
-  temp = 0;
-  for (i = 1; i < n_vertices; i++) {
-    printf("%d ", grafo_cap[i][ESQ]);
-    temp++;
-    if (temp == n_colunas) {
-      printf("\n");
-      temp = 0;
-    }
-  }
-  printf("\n");
-
-  printf("Ligacoes para baixo (a ultima linha e suposto ser 0):\n");
-  temp = 0;
-  for (i = 1; i < n_vertices; i++) {
-    printf("%d ", grafo_cap[i][BAIXO]);
-    temp++;
-    if (temp == n_colunas) {
-      printf("\n");
-      temp = 0;
-    }
-  }
-  printf("\n");
-
-  printf("Ligacoes para cima (a primeira linha e suposto ser 0):\n");
-  temp = 0;
-  for (i = 1; i < (n_linhas*n_colunas)+1; i++) {
-    printf("%d ", grafo_cap[i][CIMA]);
-    temp++;
-    if (temp == n_colunas) {
-      printf("\n");
-      temp = 0;
-    }
-  }
-  printf("\n");*/
-
 
   for (i = 0; i < n_vertices; i++) {
     free(grafo_cap[i]);
