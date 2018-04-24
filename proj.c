@@ -310,6 +310,16 @@ int main(int argc, char const *argv[]) {
     }
   }
 
+
+  /* Este ciclo e suposto depachar os caminhos de P a C que passam so por vertice */
+  for (i = 1; i < n_vertices; i++) {
+    if ((grafo_cap[P][i-1] != 0) && (grafo_cap[i][C] != 0)) {
+      fluxoMin = (grafo_cap[P][i-1] < grafo_cap[i][C] ? grafo_cap[P][i-1] : grafo_cap[i][C]);
+      grafo_cap[P][i-1] -= fluxoMin;
+      grafo_cap[i][C]   -= fluxoMin;
+    }
+  }
+
   /* Calcula a divisao entre pontos de cenario e de primeiro plano a partir de fluxos. */
   edmonds_Karp();
 
