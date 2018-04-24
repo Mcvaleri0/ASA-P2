@@ -222,11 +222,18 @@ void encontraFluxoMin(int pai, int filho) {
 /* edmonds_Karp() --> Calcula a divisao entre pontos de cenario e de primeiro
                       plano a partir de fluxos. */
 void edmonds_Karp() {
-  int paiTarget, atual, lig;
+  int i, paiTarget, atual, lig;
 
   cor  = (int*) malloc(n_vertices * sizeof(int));
   dist = (int*) malloc(n_vertices * sizeof(int));
   pais = (int*) malloc(n_vertices * sizeof(int));
+
+  for (i = 1; i < n_vertices; i++) {
+    fluxoMin = min(grafo_cap[P][i-1], grafo_cap[i][C]);
+    grafo_cap[i][P] += fluxoMin;
+    grafo_cap[P][i-1] -= fluxoMin;
+    grafo_cap[i][C] -= fluxoMin;
+  }
 
   for (paiTarget = BFS(); paiTarget != -1; paiTarget = BFS()) {
 

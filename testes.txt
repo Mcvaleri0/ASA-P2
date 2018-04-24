@@ -10,3 +10,5 @@ echo running t05.in
 ./proj < Testes/Inputs/t05.in > Testes/Meus-Outputs/t05.out
 echo running t06.in
 ./proj < Testes/Inputs/t06.in > Testes/Meus-Outputs/t06.out
+echo running t400.in
+./proj < Testes/Inputs/t400.in > Testes/Meus-Outputs/t400.out
