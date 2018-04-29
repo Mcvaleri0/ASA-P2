@@ -6,7 +6,6 @@ proj.o: proj.c
 	gcc -g -Wall -pedantic -c proj.c
 
 run:
-	mkdir Testes/Meus-Outputs;
 	sh testes.txt
 
 diff:
@@ -14,4 +13,3 @@ diff:
 
 clean:
 	rm -f *.o proj
-	rm -r Testes/Meus-Outputs
