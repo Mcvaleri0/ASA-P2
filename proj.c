@@ -18,12 +18,12 @@
 
 
 
-/* ------------------------------ Estruturas ------------------------------ */
+/* ------------------------------ Estruturas ------------------------------
 typedef struct no {
   int id;
   struct no *next;
 } No;
-/* ------------------------------------------------------------------------- */
+ ------------------------------------------------------------------------- */
 
 
 
@@ -36,7 +36,8 @@ int *peso_plano, *peso_cenario;
 
 int fluxoMin;
 int *cor, *dist, *pais;
-No  *lista_incio, *lista_fim;
+/*No  *lista_incio, *lista_fim;*/
+int *queue, ind_mete, ind_tira;
 /* ------------------------------------------------------------------------- */
 
 
@@ -112,7 +113,7 @@ int encontraLigacao(int pai, int filho) {
 /* - - - - Funcoes para controlo da lista de vertices descobertos - - - - */
 
 /* enqueque(int i) --> guarda o vertice i na lista. */
-void enqueque(int i) {
+void enqueque(int i) {/*
   No *novo = (No*) malloc(sizeof(No));
 
   novo->id = i;
@@ -124,20 +125,25 @@ void enqueque(int i) {
   } else {
     lista_fim->next = novo;
     lista_fim = novo;
-  }
+  }*/
+  queue[ind_mete] = i;
+  ind_mete++;
 }
 
 /* dequeque() --> retira o primeiro elemento da lista e devolve o seu id. */
-int dequeque() {
+int dequeque() {/*
   No *temp = lista_incio;
   int res  = lista_incio->id;
 
   lista_incio = lista_incio->next;
   free(temp);
+  return res;*/
+  int res = queue[ind_tira];
+  ind_tira++;
   return res;
 }
 
-/* freeLista() --> Liberta a memoria reservada para a lista; */
+/* freeLista() --> Liberta a memoria reservada para a lista;
 void freeLista() {
   if (lista_incio != NULL) {
     No *temp = lista_incio->next;
@@ -145,7 +151,7 @@ void freeLista() {
     lista_incio = temp;
     freeLista();
   }
-}
+}*/
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 
@@ -166,11 +172,13 @@ int BFS() {
   dist[P] = 0;
   pais[P] = -1;
 
-  lista_incio = NULL;
-  lista_fim   = NULL;
+  /*lista_incio = NULL;
+  lista_fim   = NULL;*/
+  ind_mete = 0;
+  ind_tira = 0;
   enqueque(P);
 
-  while (lista_incio != NULL) {
+  while (/*lista_incio != NULL*/ ind_tira != ind_mete) {
     u = dequeque();
     n_vizinhos = (u == P ? n_vertices-1 : 6);
 
@@ -180,7 +188,7 @@ int BFS() {
         if (u != P) {
           if (i == C) {
 
-            freeLista();
+            /*freeLista();*/
             return u; /* Chegou-se ao target (C). */
           }
 
@@ -224,9 +232,10 @@ void encontraFluxoMin(int pai, int filho) {
 void edmonds_Karp() {
   int i, paiTarget, atual, lig;
 
-  cor  = (int*) malloc(n_vertices * sizeof(int));
-  dist = (int*) malloc(n_vertices * sizeof(int));
-  pais = (int*) malloc(n_vertices * sizeof(int));
+  cor   = (int*) malloc(n_vertices * sizeof(int));
+  dist  = (int*) malloc(n_vertices * sizeof(int));
+  pais  = (int*) malloc(n_vertices * sizeof(int));
+  queue = (int*) malloc(n_vertices * sizeof(int));
 
   for (i = 1; i < n_vertices; i++) {
     fluxoMin = min(grafo_cap[P][i-1], grafo_cap[i][C]);
@@ -250,6 +259,7 @@ void edmonds_Karp() {
   }
   free(cor);
   free(pais);
+  free(queue);
 }
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
