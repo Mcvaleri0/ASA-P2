@@ -18,16 +18,6 @@
 
 
 
-/* ------------------------------ Estruturas ------------------------------
-typedef struct no {
-  int id;
-  struct no *next;
-} No;
- ------------------------------------------------------------------------- */
-
-
-
-
 /* --------------------------- Variaveis Globais --------------------------- */
 int n_colunas, n_linhas;
 int n_vertices; /* --> ja conta com o vertice P (source) */
@@ -36,7 +26,6 @@ int *peso_plano, *peso_cenario;
 
 int fluxoMin;
 int *cor, *dist, *pais;
-/*No  *lista_incio, *lista_fim;*/
 int *queue, ind_mete, ind_tira;
 /* ------------------------------------------------------------------------- */
 
@@ -113,45 +102,17 @@ int encontraLigacao(int pai, int filho) {
 /* - - - - Funcoes para controlo da lista de vertices descobertos - - - - */
 
 /* enqueque(int i) --> guarda o vertice i na lista. */
-void enqueque(int i) {/*
-  No *novo = (No*) malloc(sizeof(No));
-
-  novo->id = i;
-  novo->next = NULL;
-
-  if (lista_incio == NULL) {
-    lista_incio = novo;
-    lista_fim   = novo;
-  } else {
-    lista_fim->next = novo;
-    lista_fim = novo;
-  }*/
+void enqueque(int i) {
   queue[ind_mete] = i;
   ind_mete++;
 }
 
 /* dequeque() --> retira o primeiro elemento da lista e devolve o seu id. */
-int dequeque() {/*
-  No *temp = lista_incio;
-  int res  = lista_incio->id;
-
-  lista_incio = lista_incio->next;
-  free(temp);
-  return res;*/
+int dequeque() {
   int res = queue[ind_tira];
   ind_tira++;
   return res;
 }
-
-/* freeLista() --> Liberta a memoria reservada para a lista;
-void freeLista() {
-  if (lista_incio != NULL) {
-    No *temp = lista_incio->next;
-    free(lista_incio);
-    lista_incio = temp;
-    freeLista();
-  }
-}*/
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 
@@ -172,13 +133,11 @@ int BFS() {
   dist[P] = 0;
   pais[P] = -1;
 
-  /*lista_incio = NULL;
-  lista_fim   = NULL;*/
   ind_mete = 0;
   ind_tira = 0;
   enqueque(P);
 
-  while (/*lista_incio != NULL*/ ind_tira != ind_mete) {
+  while (ind_tira != ind_mete) {
     u = dequeque();
     n_vizinhos = (u == P ? n_vertices-1 : 6);
 
@@ -186,11 +145,7 @@ int BFS() {
 
       if (grafo_cap[u][i] > 0) { /* As ligacoes com capacidade 0 nao contam. */
         if (u != P) {
-          if (i == C) {
-
-            /*freeLista();*/
-            return u; /* Chegou-se ao target (C). */
-          }
+          if (i == C) { return u; } /* Chegou-se ao target (C). */
 
           v = encontraVizinho(i, u);
 
